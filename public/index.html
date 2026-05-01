@@ -1,769 +1,732 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Arena 2 — Shooter</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    width: 100%; height: 100%; overflow: hidden;
-    background: #060810;
-    font-family: 'Courier New', monospace;
-    color: #fff;
-    user-select: none;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>⚡ APEX SHOOTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
-  /* ── MENU SCREEN ── */
-  #menu-screen {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    background: radial-gradient(ellipse at 50% 40%, #0d1a3a 0%, #060810 70%);
-    z-index: 100;
-  }
-  #menu-screen.hidden { display: none; }
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .menu-logo {
-    font-size: clamp(28px, 6vw, 52px);
-    font-weight: 900;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #4fc3f7, #69f0ae, #4fc3f7);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
-    margin-bottom: 6px;
-    animation: logoPulse 3s ease-in-out infinite;
-  }
-  @keyframes logoPulse {
-    0%,100% { filter: drop-shadow(0 0 18px #4fc3f766); }
-    50%      { filter: drop-shadow(0 0 36px #69f0ae88); }
-  }
-  .menu-subtitle {
-    font-size: clamp(10px, 2vw, 14px);
-    color: #4fc3f788;
-    letter-spacing: 4px;
-    margin-bottom: 50px;
-    text-transform: uppercase;
-  }
+    :root {
+      --c-p1: #4fc3f7;
+      --c-p2: #ef9a9a;
+      --c-bg: #060810;
+      --c-panel: rgba(10,15,30,0.92);
+      --c-border: rgba(79,195,247,0.18);
+      --c-accent: #4fc3f7;
+      --c-glow: 0 0 18px rgba(79,195,247,0.5);
+      --font-head: 'Orbitron', monospace;
+      --font-body: 'Share Tech Mono', monospace;
+    }
 
-  .menu-card {
-    background: rgba(13,16,32,0.92);
-    border: 1px solid #4fc3f722;
-    border-radius: 14px;
-    padding: 32px 36px;
-    width: min(440px, 92vw);
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    box-shadow: 0 0 60px #4fc3f712, inset 0 1px 0 #ffffff0a;
-  }
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--c-bg);
+      color: #e0f0ff;
+      font-family: var(--font-body);
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
 
-  .menu-btn {
-    display: flex; align-items: center; gap: 14px;
-    padding: 16px 22px;
-    border: 1.5px solid #4fc3f733;
-    border-radius: 10px;
-    background: rgba(79,195,247,0.05);
-    color: #fff;
-    font-family: 'Courier New', monospace;
-    font-size: clamp(12px, 2vw, 15px);
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.18s;
-    text-align: left;
-  }
-  .menu-btn:hover, .menu-btn:focus {
-    background: rgba(79,195,247,0.14);
-    border-color: #4fc3f7;
-    transform: translateX(4px);
-    outline: none;
-  }
-  .menu-btn .btn-icon { font-size: 22px; min-width: 30px; text-align: center; }
-  .menu-btn .btn-info { display: flex; flex-direction: column; gap: 2px; }
-  .menu-btn .btn-title { color: #4fc3f7; font-size: clamp(13px, 2vw, 16px); }
-  .menu-btn .btn-desc  { color: #ffffff55; font-size: clamp(9px, 1.5vw, 11px); font-weight: 400; letter-spacing: 0; }
-  .menu-btn.pvp .btn-title  { color: #69f0ae; }
-  .menu-btn.pvp { border-color: #69f0ae33; background: rgba(105,240,174,0.05); }
-  .menu-btn.pvp:hover { background: rgba(105,240,174,0.14); border-color: #69f0ae; }
+    /* ── MAIN MENU ── */
+    #main-menu {
+      position: fixed; inset: 0; z-index: 999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 35%, #0a1428 0%, #060810 70%);
+      overflow: hidden;
+    }
 
-  .menu-divider { height: 1px; background: #ffffff0f; margin: 4px 0; }
+    /* Animated grid bg */
+    #main-menu::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(79,195,247,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,195,247,0.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+      animation: gridDrift 20s linear infinite;
+    }
+    @keyframes gridDrift { to { transform: translateY(44px); } }
 
-  /* Room join panel */
-  #room-join-panel {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    padding: 14px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 8px;
-    border: 1px solid #4fc3f722;
-    margin-top: 2px;
-  }
-  #room-join-panel.visible { display: flex; }
-  #room-id-input {
-    background: rgba(255,255,255,0.06);
-    border: 1.5px solid #4fc3f744;
-    border-radius: 7px;
-    color: #4fc3f7;
-    font-family: 'Courier New', monospace;
-    font-size: 15px;
-    letter-spacing: 3px;
-    padding: 10px 14px;
-    text-transform: uppercase;
-    outline: none;
-    width: 100%;
-  }
-  #room-id-input::placeholder { color: #ffffff33; letter-spacing: 1px; text-transform: none; font-size: 12px; }
-  #room-id-input:focus { border-color: #4fc3f7; }
-  .room-action-btns { display: flex; gap: 8px; }
-  .room-action-btn {
-    flex: 1; padding: 10px;
-    border-radius: 7px; border: 1px solid #4fc3f744;
-    background: rgba(79,195,247,0.1);
-    color: #4fc3f7; font-family: 'Courier New', monospace;
-    font-size: 12px; font-weight: 700; cursor: pointer;
-    transition: all 0.15s; letter-spacing: 1px;
-  }
-  .room-action-btn:hover { background: rgba(79,195,247,0.22); border-color: #4fc3f7; }
+    /* corner decorations */
+    #main-menu::after {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      border: 2px solid rgba(79,195,247,0.12);
+      box-shadow: inset 0 0 120px rgba(79,195,247,0.04);
+    }
 
-  .menu-footer {
-    margin-top: 22px;
-    color: #ffffff22;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-align: center;
-  }
+    .menu-corner {
+      position: absolute; width: 60px; height: 60px;
+      border-color: rgba(79,195,247,0.4); border-style: solid;
+    }
+    .menu-corner.tl { top: 20px; left: 20px; border-width: 3px 0 0 3px; }
+    .menu-corner.tr { top: 20px; right: 20px; border-width: 3px 3px 0 0; }
+    .menu-corner.bl { bottom: 20px; left: 20px; border-width: 0 0 3px 3px; }
+    .menu-corner.br { bottom: 20px; right: 20px; border-width: 0 3px 3px 0; }
 
-  /* ── GAME SCREEN ── */
-  #game-screen {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-  }
-  #game-screen.hidden { display: none; }
+    .menu-logo {
+      position: relative; z-index: 1;
+      text-align: center; margin-bottom: 10px;
+    }
+    .menu-logo .logo-title {
+      font-family: var(--font-head);
+      font-size: clamp(2.4rem, 8vw, 5rem);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #4fc3f7, #fff 40%, #ef9a9a 80%, #4fc3f7);
+      background-clip: text; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 30px rgba(79,195,247,0.5));
+      animation: logoShimmer 4s ease-in-out infinite;
+    }
+    @keyframes logoShimmer {
+      0%,100% { filter: drop-shadow(0 0 24px rgba(79,195,247,0.4)); }
+      50%      { filter: drop-shadow(0 0 48px rgba(79,195,247,0.8)); }
+    }
+    .menu-logo .logo-sub {
+      font-family: var(--font-body);
+      font-size: clamp(0.65rem, 2vw, 0.9rem);
+      letter-spacing: 0.5em;
+      color: rgba(79,195,247,0.55);
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
 
-  /* HUD bar */
-  #hud {
-    width: 100%;
-    max-width: 820px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px 4px;
-    gap: 6px;
-    flex-shrink: 0;
-  }
+    .menu-tagline {
+      position: relative; z-index: 1;
+      font-size: 0.75rem; letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.22);
+      text-transform: uppercase;
+      margin-bottom: 44px;
+    }
 
-  .hud-side {
-    display: flex; flex-direction: column;
-    align-items: flex-start; gap: 1px;
-    min-width: 110px;
-  }
-  .hud-side.right { align-items: flex-end; }
+    /* Room selection cards */
+    .menu-cards {
+      position: relative; z-index: 1;
+      display: flex; gap: 20px; flex-wrap: wrap;
+      justify-content: center; padding: 0 16px;
+      margin-bottom: 36px;
+    }
 
-  .hud-name {
-    font-size: 11px; font-weight: 900; letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .hud-name.p1 { color: #4fc3f7; }
-  .hud-name.p2 { color: #ef9a9a; }
+    .menu-card {
+      width: 200px;
+      background: rgba(10,18,40,0.85);
+      border: 1px solid rgba(79,195,247,0.2);
+      border-radius: 4px;
+      padding: 24px 18px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .menu-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-col, #4fc3f7), transparent);
+      opacity: 0; transition: opacity 0.22s;
+    }
+    .menu-card:hover::before, .menu-card:active::before { opacity: 1; }
+    .menu-card:hover {
+      border-color: rgba(79,195,247,0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(79,195,247,0.15);
+      background: rgba(15,25,55,0.95);
+    }
+    .menu-card .card-icon {
+      font-size: 2.2rem; margin-bottom: 10px;
+      display: block; line-height: 1;
+    }
+    .menu-card .card-title {
+      font-family: var(--font-head);
+      font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent-col, #4fc3f7);
+      margin-bottom: 8px;
+    }
+    .menu-card .card-desc {
+      font-size: 0.62rem; color: rgba(255,255,255,0.42);
+      line-height: 1.6; letter-spacing: 0.04em;
+    }
+    .menu-card.vs-ai   { --accent-col: #69f0ae; }
+    .menu-card.vs-p2   { --accent-col: #4fc3f7; }
+    .menu-card.spectate{ --accent-col: #ffca28; }
 
-  .hud-lives { font-size: 14px; letter-spacing: 2px; }
-  .hud-lives .heart { color: #ef5350; }
-  .hud-lives .heart.dim { opacity: 0.15; }
+    /* Room ID input */
+    .menu-room {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 28px;
+    }
+    .room-label {
+      font-size: 0.65rem; letter-spacing: 0.25em;
+      color: rgba(79,195,247,0.45); text-transform: uppercase;
+    }
+    #roomInput {
+      background: rgba(79,195,247,0.06);
+      border: 1px solid rgba(79,195,247,0.25);
+      border-radius: 3px;
+      color: #4fc3f7; font-family: var(--font-body);
+      font-size: 0.8rem; letter-spacing: 0.15em;
+      padding: 7px 14px; width: 140px;
+      outline: none; text-align: center; text-transform: uppercase;
+      transition: border-color 0.2s;
+    }
+    #roomInput:focus { border-color: rgba(79,195,247,0.6); }
+    #roomInput::placeholder { color: rgba(79,195,247,0.25); }
 
-  .hud-score {
-    font-size: 12px; font-weight: 700; color: #ffffff66;
-    letter-spacing: 1px;
-  }
+    /* Version / controls hint */
+    .menu-hint {
+      position: relative; z-index: 1;
+      font-size: 0.6rem; color: rgba(255,255,255,0.2);
+      letter-spacing: 0.15em; text-align: center;
+    }
+    .menu-hint span { color: rgba(79,195,247,0.4); }
 
-  #hud-center {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; gap: 2px;
-  }
-  #roundNum { font-size: 10px; color: #ffffff33; letter-spacing: 2px; }
-  #status   { font-size: 11px; color: #ffffff55; letter-spacing: 1px; }
-  #youLabel { font-size: 10px; color: #4fc3f7aa; letter-spacing: 1px; }
+    /* Scanning line effect */
+    .scan-line {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(79,195,247,0.25), transparent);
+      animation: scanMove 5s linear infinite;
+      pointer-events: none; z-index: 2;
+    }
+    @keyframes scanMove { from { top: -2px; } to { top: 100%; } }
 
-  /* Room info bar */
-  #room-info-bar {
-    width: 100%; max-width: 820px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 2px 10px;
-    font-size: 9px; color: #ffffff22; letter-spacing: 1px;
-  }
-  #room-id-display { color: #4fc3f744; }
-  #back-to-menu-btn {
-    color: #ffffff33; cursor: pointer; font-size: 9px;
-    letter-spacing: 1px; border: none; background: none;
-    font-family: inherit; transition: color 0.15s;
-  }
-  #back-to-menu-btn:hover { color: #4fc3f7; }
+    /* ── GAME WRAPPER ── */
+    #game-wrapper {
+      display: none;
+      flex-direction: column;
+      width: 100%; height: 100%;
+      background: var(--c-bg);
+    }
+    #game-wrapper.active { display: flex; }
 
-  /* Canvas wrapper */
-  #canvas-wrap {
-    position: relative;
-    width: 100%; max-width: 820px;
-    display: flex; align-items: center; justify-content: center;
-    flex: 1;
-    overflow: hidden;
-  }
+    /* ── TOP HUD ── */
+    #hud-top {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 14px 5px;
+      background: rgba(6,8,16,0.96);
+      border-bottom: 1px solid var(--c-border);
+      position: relative;
+      min-height: 48px;
+    }
+    /* animated border pulse */
+    #hud-top::after {
+      content: '';
+      position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(79,195,247,0.5), transparent);
+      animation: borderPulse 3s ease-in-out infinite;
+    }
+    @keyframes borderPulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
-  canvas {
-    display: block;
-    width: 100%; height: 100%;
-    object-fit: contain;
-    image-rendering: pixelated;
-    cursor: crosshair;
-    touch-action: none;
-  }
+    .hud-player {
+      display: flex; flex-direction: column; gap: 2px; min-width: 120px;
+    }
+    .hud-player.right { align-items: flex-end; }
 
-  /* Weapon strip */
-  #weapon-strip {
-    width: 100%; max-width: 820px;
-    display: flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 4px 10px;
-    background: rgba(0,0,0,0.5);
-    flex-shrink: 0;
-  }
-  .weapon-slot {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 2px; padding: 4px 8px; border-radius: 6px;
-    border: 1.5px solid #ffffff11;
-    background: rgba(255,255,255,0.04);
-    min-width: 52px; cursor: pointer;
-    transition: all 0.12s;
-    font-size: 9px; color: #ffffff44; letter-spacing: 1px;
-    position: relative;
-  }
-  .weapon-slot .ws-key {
-    font-size: 8px; color: #ffffff22; font-weight: 700;
-  }
-  .weapon-slot .ws-name {
-    font-size: 10px; font-weight: 700; letter-spacing: 1px;
-  }
-  .weapon-slot .ws-ammo {
-    font-size: 8px; color: #ffffff44;
-  }
-  .weapon-slot.active {
-    border-color: currentColor;
-    background: rgba(255,255,255,0.09);
-  }
-  .weapon-slot.active .ws-name { opacity: 1; }
-  .weapon-slot.no-ammo { opacity: 0.3; }
-  .weapon-slot[data-w="pistol"]  { color: #81d4fa; }
-  .weapon-slot[data-w="shotgun"] { color: #ffca28; }
-  .weapon-slot[data-w="sniper"]  { color: #ce93d8; }
-  .weapon-slot[data-w="smg"]     { color: #a5d6a7; }
-  .weapon-slot[data-w="rocket"]  { color: #ff7043; }
+    .player-id-badge {
+      font-family: var(--font-head);
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 2px;
+      display: inline-block;
+    }
+    .p1-badge { background: rgba(79,195,247,0.12); color: var(--c-p1); border: 1px solid rgba(79,195,247,0.3); }
+    .p2-badge { background: rgba(239,154,154,0.12); color: var(--c-p2); border: 1px solid rgba(239,154,154,0.3); }
 
-  /* Keybinds hint */
-  #keybinds {
-    width: 100%; max-width: 820px;
-    display: flex; align-items: center; justify-content: center;
-    gap: 16px; padding: 2px 10px 4px;
-    font-size: 8px; color: #ffffff22; letter-spacing: 1px;
-    flex-shrink: 0;
-  }
-  .kb { display: flex; align-items: center; gap: 4px; }
-  .kb kbd {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid #ffffff22;
-    border-radius: 3px; padding: 1px 4px;
-    font-family: inherit; font-size: 8px; color: #ffffff44;
-  }
+    .lives-row {
+      display: flex; gap: 4px; font-size: 0.85rem;
+      color: #e57373;
+    }
+    .lives-row span { transition: opacity 0.3s; }
 
-  /* ── MOBILE UI ── */
-  #mobile-ui {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 160px;
-    z-index: 50;
-    pointer-events: none;
-    padding: 0 16px 16px;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-  .mobile-side { pointer-events: auto; display: flex; align-items: flex-end; gap: 10px; }
-  #joystick-base {
-    width: 100px; height: 100px;
-    background: rgba(255,255,255,0.08);
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 50%; position: relative; touch-action: none;
-  }
-  #joystick-knob {
-    width: 40px; height: 40px;
-    background: rgba(79,195,247,0.6);
-    border-radius: 50%;
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    transition: transform 0.05s;
-  }
-  .mobile-btn {
-    width: 58px; height: 58px; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; letter-spacing: 1px;
-    touch-action: none; cursor: pointer;
-  }
-  #shoot-btn   { background: rgba(79,195,247,0.25); border-color: #4fc3f7; color: #4fc3f7; }
-  #grenade-btn { background: rgba(255,234,0,0.2);   border-color: #ffea00; color: #ffea00; font-size: 18px; }
-  #dash-btn    { background: rgba(105,240,174,0.2); border-color: #69f0ae; color: #69f0ae; }
+    /* Center HUD */
+    .hud-center {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .score-row {
+      display: flex; align-items: center; gap: 16px;
+    }
+    #p1score, #p2score {
+      font-family: var(--font-head); font-size: clamp(1rem, 3vw, 1.5rem);
+      font-weight: 900; letter-spacing: 0.05em;
+      min-width: 60px; text-align: center;
+    }
+    #p1score { color: var(--c-p1); }
+    #p2score { color: var(--c-p2); }
+    .score-divider {
+      font-size: 0.9rem; color: rgba(255,255,255,0.2);
+      font-family: var(--font-head);
+    }
+    #roundNum {
+      font-size: 0.55rem; letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.28); text-transform: uppercase;
+    }
+    #status {
+      font-size: 0.58rem; letter-spacing: 0.2em;
+      color: rgba(79,195,247,0.55);
+      animation: blink 1.2s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* Mobile weapon switch strip (touch) */
-  #mobile-wep-strip {
-    display: none;
-    position: fixed; top: 70px; right: 8px;
-    flex-direction: column; gap: 4px; z-index: 50;
-  }
-  .mobile-wep-btn {
-    width: 42px; height: 32px; border-radius: 5px;
-    border: 1.5px solid rgba(255,255,255,0.15);
-    background: rgba(0,0,0,0.5);
-    color: #fff; font-size: 9px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    touch-action: none; cursor: pointer; letter-spacing: 1px;
-  }
-  .mobile-wep-btn.active { border-color: #4fc3f7; background: rgba(79,195,247,0.2); }
+    /* You label */
+    #youLabel {
+      font-size: 0.58rem; letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.35); text-transform: uppercase;
+      text-align: right; font-family: var(--font-body);
+    }
 
-  /* ── TOAST overlay ── */
-  #toast-overlay {
-    position: fixed; inset: 0; pointer-events: none; z-index: 200;
-  }
+    /* ── CANVAS AREA ── */
+    #canvas-wrap {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+      background: #060810;
+    }
+    #canvas {
+      display: block;
+      max-width: 100%; max-height: 100%;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      image-rendering: auto;
+      cursor: none;
+    }
 
-  /* Loading screen */
-  #loading-screen {
-    position: fixed; inset: 0; background: #060810;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    z-index: 999; transition: opacity 0.4s;
-  }
-  #loading-screen.fade { opacity: 0; pointer-events: none; }
-  .loading-title { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #4fc3f7; }
-  .loading-sub   { font-size: 11px; color: #ffffff33; letter-spacing: 2px; margin-top: 12px; }
-  .loading-bar-wrap {
-    margin-top: 24px; width: 200px; height: 3px;
-    background: #ffffff11; border-radius: 2px; overflow: hidden;
-  }
-  .loading-bar { height: 100%; background: #4fc3f7; border-radius: 2px; animation: loadAnim 1.2s ease-in-out infinite; }
-  @keyframes loadAnim {
-    0%   { width: 0%; margin-left: 0; }
-    50%  { width: 80%; margin-left: 0; }
-    100% { width: 0%; margin-left: 100%; }
-  }
+    /* ── WEAPON STRIP (PC) ── */
+    #weapon-strip {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 6px 14px;
+      background: rgba(6,8,16,0.96);
+      border-top: 1px solid var(--c-border);
+    }
+    @media (max-width: 600px) { #weapon-strip { display: none; } }
 
-  /* ── ROOM SHARE modal ── */
-  #room-share-modal {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 300;
-    align-items: center; justify-content: center;
-  }
-  #room-share-modal.visible { display: flex; }
-  .modal-box {
-    background: #0d1020;
-    border: 1px solid #4fc3f733;
-    border-radius: 14px;
-    padding: 28px 32px;
-    width: min(380px, 90vw);
-    display: flex; flex-direction: column; gap: 14px;
-    align-items: center; text-align: center;
-    box-shadow: 0 0 60px #4fc3f720;
-  }
-  .modal-title { font-size: 16px; font-weight: 900; color: #4fc3f7; letter-spacing: 2px; }
-  .modal-sub   { font-size: 11px; color: #ffffff55; letter-spacing: 1px; }
-  .modal-room-id {
-    font-size: 28px; font-weight: 900; letter-spacing: 6px;
-    color: #69f0ae; background: rgba(105,240,174,0.08);
-    border: 1.5px solid #69f0ae33;
-    border-radius: 8px; padding: 10px 24px;
-    cursor: pointer; transition: background 0.15s;
-  }
-  .modal-room-id:hover { background: rgba(105,240,174,0.18); }
-  .modal-copy-hint { font-size: 9px; color: #ffffff22; letter-spacing: 1px; }
-  .modal-dismiss {
-    padding: 10px 28px; border-radius: 8px;
-    background: rgba(79,195,247,0.1);
-    border: 1.5px solid #4fc3f744;
-    color: #4fc3f7; font-family: 'Courier New', monospace;
-    font-size: 12px; font-weight: 700; letter-spacing: 2px;
-    cursor: pointer; transition: all 0.15s; margin-top: 4px;
-  }
-  .modal-dismiss:hover { background: rgba(79,195,247,0.2); }
+    .wep-slot {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 5px 10px; border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer; transition: all 0.15s;
+      min-width: 56px;
+    }
+    .wep-slot:hover { background: rgba(79,195,247,0.08); border-color: rgba(79,195,247,0.3); }
+    .wep-slot.active {
+      background: rgba(79,195,247,0.14);
+      border-color: rgba(79,195,247,0.6);
+      box-shadow: 0 0 14px rgba(79,195,247,0.2);
+    }
+    .wep-slot .wep-key {
+      font-family: var(--font-body); font-size: 0.55rem;
+      color: rgba(255,255,255,0.3); letter-spacing: 0.1em;
+    }
+    .wep-slot .wep-name {
+      font-family: var(--font-head); font-size: 0.58rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: #fff;
+    }
+    .wep-slot .wep-ammo {
+      font-size: 0.6rem; color: rgba(255,255,255,0.45);
+    }
+    .wep-slot.active .wep-name { color: #4fc3f7; }
 
-  /* ── Scanning lines overlay ── */
-  #scanlines {
-    position: fixed; inset: 0; pointer-events: none; z-index: 1;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(0,0,0,0.03) 3px,
-      rgba(0,0,0,0.03) 4px
-    );
-  }
-</style>
+    /* ── MOBILE UI ── */
+    #mobile-ui {
+      display: none; /* shown via JS on mobile */
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 170px;
+      padding: 0 16px 12px;
+      pointer-events: none;
+      z-index: 800;
+      align-items: flex-end; justify-content: space-between;
+    }
+
+    /* Left joystick zone */
+    .mobile-left {
+      display: flex; align-items: flex-end;
+      pointer-events: auto;
+    }
+    #joystick-base {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: rgba(79,195,247,0.06);
+      border: 2px solid rgba(79,195,247,0.25);
+      position: relative; touch-action: none;
+      box-shadow: 0 0 30px rgba(79,195,247,0.1);
+    }
+    #joystick-knob {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 44px; height: 44px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(79,195,247,0.5), rgba(79,195,247,0.2));
+      border: 2px solid rgba(79,195,247,0.6);
+      box-shadow: 0 0 16px rgba(79,195,247,0.3);
+      pointer-events: none;
+    }
+
+    /* Right buttons */
+    .mobile-right {
+      display: flex; flex-direction: column; gap: 10px;
+      align-items: flex-end; pointer-events: auto;
+    }
+    .mobile-btns-row {
+      display: flex; gap: 10px; align-items: center;
+    }
+    .mob-btn {
+      border-radius: 50%; border: 2px solid;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-size: 0.55rem; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; user-select: none;
+      touch-action: none; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.08s, box-shadow 0.08s;
+      flex-shrink: 0;
+    }
+    .mob-btn:active, .mob-btn.pressed {
+      transform: scale(0.9);
+    }
+
+    #shoot-btn {
+      width: 80px; height: 80px;
+      background: rgba(239,154,154,0.15);
+      border-color: rgba(239,154,154,0.5);
+      color: #ef9a9a;
+      box-shadow: 0 0 20px rgba(239,154,154,0.15);
+      font-size: 0.65rem;
+    }
+    #shoot-btn:active { box-shadow: 0 0 30px rgba(239,154,154,0.4); }
+
+    #grenade-btn {
+      width: 54px; height: 54px;
+      background: rgba(255,202,40,0.12);
+      border-color: rgba(255,202,40,0.45);
+      color: #ffca28;
+    }
+    #dash-btn {
+      width: 54px; height: 54px;
+      background: rgba(105,240,174,0.12);
+      border-color: rgba(105,240,174,0.45);
+      color: #69f0ae;
+    }
+
+    /* Mobile weapon strip */
+    #mobile-wep-strip {
+      display: none; /* shown on mobile */
+      position: fixed; top: 52px; left: 0; right: 0;
+      flex-direction: row; justify-content: center; gap: 6px;
+      padding: 6px 10px;
+      background: rgba(6,8,16,0.82);
+      border-bottom: 1px solid rgba(79,195,247,0.1);
+      z-index: 700;
+      pointer-events: auto;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    #mobile-wep-strip::-webkit-scrollbar { display: none; }
+
+    .mobile-wep-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      padding: 4px 10px; border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer; touch-action: manipulation;
+      flex-shrink: 0;
+    }
+    .mobile-wep-btn span:first-child {
+      font-family: var(--font-head); font-size: 0.6rem; font-weight: 700;
+      color: #4fc3f7; text-transform: uppercase;
+    }
+    .mobile-wep-btn span:last-child {
+      font-size: 0.5rem; color: rgba(255,255,255,0.3);
+    }
+    .mobile-wep-btn:active { background: rgba(79,195,247,0.15); }
+
+    /* ── Controls reference panel (PC) ── */
+    #controls-hint {
+      position: fixed; bottom: 56px; right: 14px;
+      background: rgba(6,8,16,0.88);
+      border: 1px solid rgba(79,195,247,0.12);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.58rem; line-height: 1.9;
+      color: rgba(255,255,255,0.3);
+      pointer-events: none;
+      z-index: 600;
+      letter-spacing: 0.08em;
+    }
+    #controls-hint strong { color: rgba(79,195,247,0.65); }
+    @media (max-width: 700px) { #controls-hint { display: none; } }
+
+    /* ── Landscape hint for mobile ── */
+    #landscape-hint {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(6,8,16,0.97);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; color: rgba(79,195,247,0.7);
+      font-family: var(--font-head); font-size: 1rem;
+      letter-spacing: 0.15em; text-align: center;
+    }
+    #landscape-hint .rotate-icon {
+      font-size: 3rem; animation: rotateIcon 2s ease-in-out infinite;
+    }
+    @keyframes rotateIcon { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(90deg)} }
+
+    /* Portrait phone — show landscape prompt */
+    @media (max-width: 600px) and (orientation: portrait) {
+      /* Uncomment below to enforce landscape; leaving optional */
+      /* #landscape-hint { display: flex; } */
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #060810; }
+    ::-webkit-scrollbar-thumb { background: rgba(79,195,247,0.3); border-radius: 2px; }
+
+    /* ── Responsive canvas scale ── */
+    @media (orientation: landscape) and (max-height: 500px) {
+      #hud-top { min-height: 36px; padding: 3px 10px; }
+      #weapon-strip { padding: 3px 10px; }
+      #mobile-ui { height: 130px; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- Loading screen -->
-<div id="loading-screen">
-  <div class="loading-title">ARENA 2</div>
-  <div class="loading-sub">CONNECTING…</div>
-  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
-</div>
+  <!-- ═══════════════════════════════════════════ MAIN MENU ═══ -->
+  <div id="main-menu">
+    <div class="scan-line"></div>
+    <div class="menu-corner tl"></div>
+    <div class="menu-corner tr"></div>
+    <div class="menu-corner bl"></div>
+    <div class="menu-corner br"></div>
 
-<!-- Scanlines overlay -->
-<div id="scanlines"></div>
+    <div class="menu-logo">
+      <div class="logo-title">APEX SHOOTER</div>
+      <div class="logo-sub">⚡ Multiplayer Arena ⚡</div>
+    </div>
+    <div class="menu-tagline">choose your battle</div>
 
-<!-- ══ MENU SCREEN ══ -->
-<div id="menu-screen" class="hidden">
-  <div class="menu-logo">ARENA 2</div>
-  <div class="menu-subtitle">Top-Down Shooter</div>
-
-  <div class="menu-card">
-    <!-- Quick Play vs AI -->
-    <button class="menu-btn" id="btn-ai">
-      <span class="btn-icon">🤖</span>
-      <span class="btn-info">
-        <span class="btn-title">PLAY VS AI</span>
-        <span class="btn-desc">Instant match against auto-aim bot</span>
-      </span>
-    </button>
-
-    <!-- Quick PvP matchmaking -->
-    <button class="menu-btn pvp" id="btn-pvp">
-      <span class="btn-icon">⚡</span>
-      <span class="btn-info">
-        <span class="btn-title">QUICK PvP</span>
-        <span class="btn-desc">Auto-match with another player online</span>
-      </span>
-    </button>
-
-    <div class="menu-divider"></div>
-
-    <!-- Private room -->
-    <button class="menu-btn" id="btn-private">
-      <span class="btn-icon">🔐</span>
-      <span class="btn-info">
-        <span class="btn-title">PRIVATE ROOM</span>
-        <span class="btn-desc">Create or join a room with a code</span>
-      </span>
-    </button>
-
-    <!-- Room join panel -->
-    <div id="room-join-panel">
-      <input id="room-id-input" maxlength="10" placeholder="Enter room code (leave blank to create)">
-      <div class="room-action-btns">
-        <button class="room-action-btn" id="btn-create-room">CREATE NEW</button>
-        <button class="room-action-btn" id="btn-join-room">JOIN ROOM</button>
+    <div class="menu-cards">
+      <div class="menu-card vs-p2" onclick="startGame('pvp')">
+        <span class="card-icon">⚔️</span>
+        <div class="card-title">VS Player</div>
+        <div class="card-desc">Open in two tabs or two devices. Real-time 1v1 multiplayer.</div>
+      </div>
+      <div class="menu-card vs-ai" onclick="startGame('bot')">
+        <span class="card-icon">🤖</span>
+        <div class="card-title">VS Bot</div>
+        <div class="card-desc">Fight an AI opponent. Sharpen your skills and dominate.</div>
+      </div>
+      <div class="menu-card spectate" onclick="startGame('spectate')">
+        <span class="card-icon">👁️</span>
+        <div class="card-title">Spectate</div>
+        <div class="card-desc">Watch an ongoing match as a spectator. No control.</div>
       </div>
     </div>
+
+    <!-- Room input -->
+    <div class="menu-room">
+      <span class="room-label">Room ID</span>
+      <input id="roomInput" type="text" maxlength="8" placeholder="DEFAULT" spellcheck="false" />
+    </div>
+
+    <div class="menu-hint">
+      <span>WASD / ARROWS</span> move &nbsp;·&nbsp; <span>G</span> grenade &nbsp;·&nbsp;
+      <span>SHIFT</span> dash &nbsp;·&nbsp; <span>1-5</span> weapon &nbsp;·&nbsp; <span>T</span> chat
+    </div>
   </div>
 
-  <div class="menu-footer">WASD · AUTO-AIM · 1-5 WEAPONS · G GRENADE · SHIFT DASH</div>
-</div>
+  <!-- ═══════════════════════════════════════════ GAME ═══════════ -->
+  <div id="game-wrapper">
 
-<!-- ══ GAME SCREEN ══ -->
-<div id="game-screen" class="hidden">
-  <!-- Room info bar -->
-  <div id="room-info-bar">
-    <span id="room-id-display"></span>
-    <button id="back-to-menu-btn">◀ MENU</button>
-  </div>
-
-  <!-- HUD -->
-  <div id="hud">
-    <div class="hud-side">
-      <div class="hud-name p1">P1</div>
-      <div class="hud-lives" id="lives-p1">
-        <span class="heart">♥</span><span class="heart">♥</span><span class="heart">♥</span>
+    <!-- ── TOP HUD ── -->
+    <div id="hud-top">
+      <!-- P1 -->
+      <div class="hud-player">
+        <span class="player-id-badge p1-badge">P1 🔵</span>
+        <div class="lives-row" id="lives-p1">
+          <span>♥</span><span>♥</span><span>♥</span>
+        </div>
       </div>
-      <div class="hud-score" id="p1score">P1 0</div>
-    </div>
 
-    <div id="hud-center">
-      <div id="roundNum">Round 1</div>
-      <div id="status"></div>
-      <div id="youLabel"></div>
-    </div>
-
-    <div class="hud-side right">
-      <div class="hud-name p2">P2</div>
-      <div class="hud-lives" id="lives-p2">
-        <span class="heart">♥</span><span class="heart">♥</span><span class="heart">♥</span>
+      <!-- Center -->
+      <div class="hud-center">
+        <div class="score-row">
+          <div id="p1score">0</div>
+          <div class="score-divider">—</div>
+          <div id="p2score">0</div>
+        </div>
+        <div id="roundNum">Round 1</div>
+        <div id="status">Waiting for players...</div>
       </div>
-      <div class="hud-score" id="p2score">P2 0</div>
+
+      <!-- P2 + you label -->
+      <div class="hud-player right">
+        <span class="player-id-badge p2-badge">P2 🔴</span>
+        <div class="lives-row" id="lives-p2">
+          <span>♥</span><span>♥</span><span>♥</span>
+        </div>
+        <div id="youLabel"></div>
+      </div>
     </div>
+
+    <!-- ── Mobile weapon strip (above canvas) ── -->
+    <div id="mobile-wep-strip">
+      <div class="mobile-wep-btn" data-w="pistol"  ontouchstart="window._forceWeaponSwitch('pistol')">
+        <span>Pistol</span><span>∞</span>
+      </div>
+      <div class="mobile-wep-btn" data-w="shotgun" ontouchstart="window._forceWeaponSwitch('shotgun')">
+        <span>Shotgun</span><span id="ammo-shotgun">0</span>
+      </div>
+      <div class="mobile-wep-btn" data-w="sniper"  ontouchstart="window._forceWeaponSwitch('sniper')">
+        <span>Sniper</span><span id="ammo-sniper">0</span>
+      </div>
+      <div class="mobile-wep-btn" data-w="smg"     ontouchstart="window._forceWeaponSwitch('smg')">
+        <span>SMG</span><span id="ammo-smg">0</span>
+      </div>
+      <div class="mobile-wep-btn" data-w="rocket"  ontouchstart="window._forceWeaponSwitch('rocket')">
+        <span>Rocket</span><span id="ammo-rocket">0</span>
+      </div>
+    </div>
+
+    <!-- ── Canvas ── -->
+    <div id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- ── Weapon strip (PC bottom bar) ── -->
+    <div id="weapon-strip">
+      <div class="wep-slot active" id="ws-pistol"  onclick="window._forceWeaponSwitch('pistol')">
+        <span class="wep-key">[1]</span>
+        <span class="wep-name">Pistol</span>
+        <span class="wep-ammo" id="ammo2-pistol">∞</span>
+      </div>
+      <div class="wep-slot" id="ws-shotgun" onclick="window._forceWeaponSwitch('shotgun')">
+        <span class="wep-key">[2]</span>
+        <span class="wep-name">Shotgun</span>
+        <span class="wep-ammo" id="ammo2-shotgun">—</span>
+      </div>
+      <div class="wep-slot" id="ws-sniper"  onclick="window._forceWeaponSwitch('sniper')">
+        <span class="wep-key">[3]</span>
+        <span class="wep-name">Sniper</span>
+        <span class="wep-ammo" id="ammo2-sniper">—</span>
+      </div>
+      <div class="wep-slot" id="ws-smg"     onclick="window._forceWeaponSwitch('smg')">
+        <span class="wep-key">[4]</span>
+        <span class="wep-name">SMG</span>
+        <span class="wep-ammo" id="ammo2-smg">—</span>
+      </div>
+      <div class="wep-slot" id="ws-rocket"  onclick="window._forceWeaponSwitch('rocket')">
+        <span class="wep-key">[5]</span>
+        <span class="wep-name">Rocket</span>
+        <span class="wep-ammo" id="ammo2-rocket">—</span>
+      </div>
+    </div>
+
+    <!-- ── Mobile joystick + buttons ── -->
+    <div id="mobile-ui">
+      <div class="mobile-left">
+        <div id="joystick-base">
+          <div id="joystick-knob"></div>
+        </div>
+      </div>
+
+      <div class="mobile-right">
+        <div class="mobile-btns-row">
+          <button class="mob-btn" id="grenade-btn">💣<br>NADE</button>
+          <button class="mob-btn" id="dash-btn">⚡<br>DASH</button>
+        </div>
+        <button class="mob-btn" id="shoot-btn">🔫 FIRE</button>
+      </div>
+    </div>
+
+    <!-- ── PC controls hint ── -->
+    <div id="controls-hint">
+      <strong>WASD</strong> / Arrows — Move<br>
+      <strong>Mouse</strong> — Aim (auto-aim on enemy)<br>
+      <strong>Click</strong> — Shoot<br>
+      <strong>G</strong> — Grenade<br>
+      <strong>Shift</strong> — Dash<br>
+      <strong>1–5</strong> — Switch weapon<br>
+      <strong>T</strong> — Chat
+    </div>
+
+  </div><!-- /game-wrapper -->
+
+  <!-- Landscape nudge (optional) -->
+  <div id="landscape-hint">
+    <div class="rotate-icon">📱</div>
+    <div>Rotate device to landscape<br>for the best experience</div>
   </div>
 
-  <!-- Canvas -->
-  <div id="canvas-wrap">
-    <canvas id="canvas" width="800" height="560"></canvas>
-  </div>
+  <!-- ── Scripts ── -->
+  <script src="/socket.io/socket.io.js"></script>
 
-  <!-- Weapon strip -->
-  <div id="weapon-strip">
-    <div class="weapon-slot" data-w="pistol"  data-key="1">
-      <span class="ws-key">1</span>
-      <span class="ws-name">PISTOL</span>
-      <span class="ws-ammo">∞</span>
-    </div>
-    <div class="weapon-slot" data-w="shotgun" data-key="2">
-      <span class="ws-key">2</span>
-      <span class="ws-name">SHOTGUN</span>
-      <span class="ws-ammo" id="ammo-shotgun">0</span>
-    </div>
-    <div class="weapon-slot" data-w="sniper"  data-key="3">
-      <span class="ws-key">3</span>
-      <span class="ws-name">SNIPER</span>
-      <span class="ws-ammo" id="ammo-sniper">0</span>
-    </div>
-    <div class="weapon-slot" data-w="smg"     data-key="4">
-      <span class="ws-key">4</span>
-      <span class="ws-name">SMG</span>
-      <span class="ws-ammo" id="ammo-smg">0</span>
-    </div>
-    <div class="weapon-slot" data-w="rocket"  data-key="5">
-      <span class="ws-key">5</span>
-      <span class="ws-name">ROCKET</span>
-      <span class="ws-ammo" id="ammo-rocket">0</span>
-    </div>
-  </div>
+  <script>
+    // ── Weapon strip update (called from game.js) ──────────────
+    window.updateWeaponStrip = function(activeWeapon, ammo) {
+      const weapons = ['pistol','shotgun','sniper','smg','rocket'];
+      weapons.forEach(w => {
+        // PC bottom strip
+        const slot = document.getElementById('ws-' + w);
+        if (slot) slot.classList.toggle('active', w === activeWeapon);
+        const ammoEl2 = document.getElementById('ammo2-' + w);
+        if (ammoEl2) {
+          const val = ammo[w];
+          ammoEl2.textContent = val === Infinity ? '∞' : (val > 0 ? val : '—');
+          ammoEl2.style.color = val === 0 ? 'rgba(255,100,100,0.5)' : '';
+        }
+        // Mobile top strip
+        const ammoEl = document.getElementById('ammo-' + w);
+        if (ammoEl) {
+          const val = ammo[w];
+          ammoEl.textContent = val === Infinity ? '∞' : (val >= 0 ? val : 0);
+        }
+        // Mobile strip active highlight
+        const mBtn = document.querySelector(`.mobile-wep-btn[data-w="${w}"]`);
+        if (mBtn) {
+          mBtn.style.borderColor = w === activeWeapon ? 'rgba(79,195,247,0.6)' : 'rgba(255,255,255,0.1)';
+          mBtn.style.background  = w === activeWeapon ? 'rgba(79,195,247,0.15)' : 'rgba(255,255,255,0.04)';
+        }
+      });
+    };
 
-  <!-- Keybinds hint -->
-  <div id="keybinds">
-    <span class="kb"><kbd>WASD</kbd> Move</span>
-    <span class="kb"><kbd>SPACE</kbd> Shoot</span>
-    <span class="kb"><kbd>G</kbd> Grenade</span>
-    <span class="kb"><kbd>SHIFT</kbd> Dash</span>
-    <span class="kb"><kbd>1-5</kbd> Weapon</span>
-    <span class="kb"><kbd>T</kbd> Chat</span>
-  </div>
-</div>
+    // ── Menu logic ────────────────────────────────────────────
+    function startGame(mode) {
+      const roomId = document.getElementById('roomInput').value.trim().toUpperCase() || 'DEFAULT';
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('game-wrapper').classList.add('active');
+      // Emit mode to server after socket is ready
+      window._gameMode = mode;
+      window._roomId  = roomId;
+      // Trigger mode event once socket is connected (game.js loads after)
+      const tryEmit = () => {
+        if (typeof socket !== 'undefined' && socket.connected) {
+          socket.emit('selectMode', { mode, roomId });
+        } else {
+          setTimeout(tryEmit, 80);
+        }
+      };
+      tryEmit();
+    }
 
-<!-- ══ MOBILE UI ══ -->
-<div id="mobile-ui">
-  <div class="mobile-side">
-    <div id="joystick-base"><div id="joystick-knob"></div></div>
-  </div>
-  <div class="mobile-side" style="flex-direction:column;gap:8px;align-items:flex-end;">
-    <div style="display:flex;gap:8px;">
-      <div class="mobile-btn" id="grenade-btn">💣</div>
-      <div class="mobile-btn" id="dash-btn">DASH</div>
-    </div>
-    <div class="mobile-btn" id="shoot-btn" style="width:80px;height:80px;font-size:14px;">FIRE</div>
-  </div>
-</div>
+    // Auto-open game if ?play param set (deep links)
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      if (params.get('play')) startGame(params.get('play'));
+    });
+  </script>
 
-<!-- Mobile weapon switcher -->
-<div id="mobile-wep-strip">
-  <div class="mobile-wep-btn" data-w="pistol">PST</div>
-  <div class="mobile-wep-btn" data-w="shotgun">SHG</div>
-  <div class="mobile-wep-btn" data-w="sniper">SNP</div>
-  <div class="mobile-wep-btn" data-w="smg">SMG</div>
-  <div class="mobile-wep-btn" data-w="rocket">RKT</div>
-</div>
-
-<!-- Room share modal -->
-<div id="room-share-modal">
-  <div class="modal-box">
-    <div class="modal-title">PRIVATE ROOM CREATED</div>
-    <div class="modal-sub">Share this code with a friend</div>
-    <div class="modal-room-id" id="modal-room-id-text" title="Click to copy">——</div>
-    <div class="modal-copy-hint">tap/click to copy</div>
-    <div class="modal-sub" style="color:#ffffff33">Waiting for opponent to join…</div>
-    <button class="modal-dismiss" id="modal-dismiss">START VS AI MEANWHILE</button>
-  </div>
-</div>
-
-<!-- Toast overlay -->
-<div id="toast-overlay"></div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="game.js"></script>
-<script>
-// ══ MENU LOGIC ══
-const menuScreen  = document.getElementById('menu-screen');
-const gameScreen  = document.getElementById('game-screen');
-const loadingScr  = document.getElementById('loading-screen');
-const shareModal  = document.getElementById('room-share-modal');
-const modalRoomId = document.getElementById('modal-room-id-text');
-const roomIdDisp  = document.getElementById('room-id-display');
-const roomJoinPanel = document.getElementById('room-join-panel');
-const isMobileDevice = 'ontouchstart' in window;
-
-let pendingMode  = null;
-let currentRoomId = null;
-let privateRoomCreated = false;
-
-// Hide loading after socket connects
-socket.on('connect', () => {
-  setTimeout(() => {
-    loadingScr.classList.add('fade');
-    setTimeout(() => { loadingScr.style.display = 'none'; }, 400);
-    menuScreen.classList.remove('hidden');
-  }, 500);
-});
-
-// Fallback: hide loading after 2s even if no socket
-setTimeout(() => {
-  if (!loadingScr.classList.contains('fade')) {
-    loadingScr.classList.add('fade');
-    setTimeout(() => { loadingScr.style.display = 'none'; }, 400);
-    menuScreen.classList.remove('hidden');
-  }
-}, 2000);
-
-function showGame() {
-  menuScreen.classList.add('hidden');
-  gameScreen.classList.remove('hidden');
-  if (isMobileDevice) {
-    document.getElementById('mobile-ui').style.display = 'flex';
-    document.getElementById('mobile-wep-strip').style.display = 'flex';
-  }
-}
-
-function showMenu() {
-  gameScreen.classList.add('hidden');
-  menuScreen.classList.remove('hidden');
-  shareModal.classList.remove('visible');
-  roomJoinPanel.classList.remove('visible');
-  document.getElementById('mobile-ui').style.display = 'none';
-  document.getElementById('mobile-wep-strip').style.display = 'none';
-}
-
-// ── Button handlers
-document.getElementById('btn-ai').addEventListener('click', () => {
-  pendingMode = 'ai';
-  socket.emit('joinGame', { mode: 'ai' });
-  showGame();
-});
-
-document.getElementById('btn-pvp').addEventListener('click', () => {
-  pendingMode = 'pvp';
-  socket.emit('joinGame', { mode: 'pvp' });
-  showGame();
-});
-
-document.getElementById('btn-private').addEventListener('click', () => {
-  roomJoinPanel.classList.toggle('visible');
-});
-
-document.getElementById('btn-create-room').addEventListener('click', () => {
-  pendingMode = 'pvp_private';
-  socket.emit('joinGame', { mode: 'pvp' });
-  showGame();
-  privateRoomCreated = true;
-});
-
-document.getElementById('btn-join-room').addEventListener('click', () => {
-  const code = document.getElementById('room-id-input').value.trim().toUpperCase();
-  if (!code) { alert('Enter a room code'); return; }
-  pendingMode = 'room';
-  socket.emit('joinGame', { mode: `room:${code}` });
-  showGame();
-});
-
-document.getElementById('back-to-menu-btn').addEventListener('click', () => {
-  // Disconnect handled by server on socket disconnect
-  window.location.reload();
-});
-
-// Allow Enter key to join room
-document.getElementById('room-id-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('btn-join-room').click();
-});
-
-// ── Socket room events
-socket.on('roomAssigned', ({ roomId, mode }) => {
-  currentRoomId = roomId;
-  roomIdDisp.textContent = `ROOM: ${roomId}`;
-
-  if (privateRoomCreated) {
-    modalRoomId.textContent = roomId;
-    shareModal.classList.add('visible');
-    privateRoomCreated = false;
-  }
-});
-
-socket.on('roomNotFound', () => {
-  alert('Room not found! Check the code and try again.');
-  showMenu();
-});
-
-socket.on('full', () => {
-  alert('That room is full!');
-  showMenu();
-});
-
-socket.on('needMenu', () => {
-  showMenu();
-});
-
-// ── Modal dismiss = start vs AI while waiting
-document.getElementById('modal-dismiss').addEventListener('click', () => {
-  shareModal.classList.remove('visible');
-  // Bot will already be added by server if room only has 1 human
-});
-
-// ── Copy room code on click
-modalRoomId.addEventListener('click', () => {
-  navigator.clipboard?.writeText(modalRoomId.textContent).then(() => {
-    const orig = modalRoomId.textContent;
-    modalRoomId.textContent = 'COPIED!';
-    setTimeout(() => { modalRoomId.textContent = orig; }, 1200);
-  });
-});
-
-// ══ WEAPON STRIP sync ══
-// Called from game.js context via global ammo update
-function updateWeaponStrip(weapon, ammo) {
-  document.querySelectorAll('.weapon-slot').forEach(slot => {
-    const w = slot.dataset.w;
-    slot.classList.toggle('active', w === weapon);
-    const ammoEl = slot.querySelector('.ws-ammo');
-    const a = ammo[w];
-    if (ammoEl) ammoEl.textContent = (a === Infinity || a === undefined && w === 'pistol') ? '∞' : (a || 0);
-    slot.classList.toggle('no-ammo', w !== 'pistol' && (a === 0 || a === undefined));
-  });
-}
-window.updateWeaponStrip = updateWeaponStrip;
-
-// Weapon slot click to switch (desktop click, mobile tap)
-document.querySelectorAll('.weapon-slot').forEach(slot => {
-  slot.addEventListener('click', () => {
-    const w = slot.dataset.w;
-    // Trigger weapon switch via synthetic key or direct emit
-    if (window._forceWeaponSwitch) window._forceWeaponSwitch(w);
-  });
-});
-
-// Mobile weapon buttons
-document.querySelectorAll('.mobile-wep-btn').forEach(btn => {
-  btn.addEventListener('touchstart', e => {
-    const w = btn.dataset.w;
-    if (window._forceWeaponSwitch) window._forceWeaponSwitch(w);
-    e.preventDefault();
-  }, { passive: false });
-});
-
-// ══ LIVES HUD update (for visual hearts) ══
-function updateLivesHUD(pid, lives) {
-  const el = document.getElementById(`lives-${pid}`);
-  if (!el) return;
-  const MAX_LIVES = 3;
-  el.innerHTML = Array.from({ length: MAX_LIVES }, (_, i) =>
-    `<span class="heart${i >= lives ? ' dim' : ''}">♥</span>`
-  ).join('');
-}
-window.updateLivesHUD = updateLivesHUD;
-</script>
+  <!-- game.js loaded last so DOM is ready -->
+  <script src="game.js"></script>
 </body>
 </html>
