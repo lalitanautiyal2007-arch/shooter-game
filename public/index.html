@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>2P Shooter</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      background: #0a0a0f;
+      background: #060610;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -15,69 +15,114 @@
       min-height: 100vh;
       font-family: 'Courier New', monospace;
       color: #fff;
+      overflow: hidden;
     }
     #scoreboard {
       display: flex;
       gap: 60px;
-      margin-bottom: 14px;
-      font-size: 22px;
+      margin-bottom: 10px;
+      font-size: 20px;
       font-weight: bold;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
     }
     #p1score { color: #4fc3f7; }
     #p2score { color: #ef9a9a; }
-    canvas {
-      border: 2px solid #333;
-      border-radius: 6px;
-      display: block;
-    }
-    #status {
-      margin-top: 14px;
-      font-size: 14px;
-      color: #888;
-      letter-spacing: 1px;
-      min-height: 20px;
-    }
-    #controls {
-      margin-top: 18px;
-      display: flex;
-      gap: 40px;
-      font-size: 12px;
-      color: #555;
-    }
-    #controls span { color: #888; }
+    #canvas-wrap { position: relative; }
+    canvas { border: 2px solid #1a2a3a; border-radius: 6px; display: block; max-width: 100vw; }
     #overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
       pointer-events: none;
     }
     #message {
-      font-size: 36px;
-      font-weight: bold;
-      letter-spacing: 4px;
-      opacity: 0;
-      transition: opacity 0.3s;
+      font-size: 36px; font-weight: bold; letter-spacing: 4px;
+      opacity: 0; transition: opacity 0.3s; text-shadow: 0 0 20px currentColor;
     }
     #message.show { opacity: 1; }
+    #status { margin-top: 10px; font-size: 13px; color: #666; letter-spacing: 1px; min-height: 18px; }
+    #controls { margin-top: 10px; display: flex; gap: 40px; font-size: 11px; color: #444; }
+    #controls span { color: #777; }
+
+    /* Power-up legend */
+    #legend {
+      display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .legend-item {
+      font-size: 10px; color: #666; display: flex; align-items: center; gap: 4px;
+    }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Mobile UI */
+    #mobile-ui {
+      display: none;
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 100px;
+      margin-top: 8px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+    #joystick-base {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.15);
+      position: relative; touch-action: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #joystick-knob {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.4);
+      position: absolute; transition: none;
+    }
+    #shoot-btn {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(239,154,154,0.15);
+      border: 2px solid #ef9a9a88;
+      color: #ef9a9a; font-size: 11px;
+      font-family: 'Courier New', monospace;
+      font-weight: bold; letter-spacing: 1px;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: none; user-select: none;
+    }
+    #shoot-btn:active { background: rgba(239,154,154,0.3); }
   </style>
 </head>
 <body>
   <div id="scoreboard">
-    <div id="p1score">P1: 0</div>
-    <div id="p2score">P2: 0</div>
+    <div id="p1score">P1 0</div>
+    <div id="p2score">P2 0</div>
   </div>
-  <div style="position:relative">
+
+  <div id="canvas-wrap">
     <canvas id="canvas" width="800" height="500"></canvas>
     <div id="overlay"><div id="message"></div></div>
   </div>
+
   <div id="status">Waiting for second player...</div>
+
   <div id="controls">
     <div><span>P1:</span> WASD move &nbsp; F shoot</div>
-    <div><span>P2:</span> Arrow keys move &nbsp; L shoot</div>
+    <div><span>P2:</span> Arrows move &nbsp; L shoot</div>
   </div>
+
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#69f0ae"></div>Speed boost</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#40c4ff"></div>Shield</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6e40"></div>Rapid fire</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffca28"></div>Shotgun</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ce93d8"></div>Sniper</div>
+  </div>
+
+  <div id="mobile-ui">
+    <div id="joystick-base">
+      <div id="joystick-knob"></div>
+    </div>
+    <div id="shoot-btn">SHOOT</div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="game.js"></script>
 </body>
