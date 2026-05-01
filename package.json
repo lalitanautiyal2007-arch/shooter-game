@@ -1,7 +1,7 @@
 {
-  "name": "shooter-game",
+  "name": "arena2-shooter",
   "version": "2.0.0",
-  "description": "Real-time 2-player browser shooter — upgraded",
+  "description": "Enhanced 2-player arena shooter",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
