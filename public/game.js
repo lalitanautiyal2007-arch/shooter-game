@@ -2,8 +2,8 @@ const socket = io();
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-// ── Dynamic resolution — 1000×650 logical, CSS scales to fill screen ─
-const W = 1000, H = 650;
+// ── Canvas matches server dimensions exactly — CSS scales to fill screen ─
+const W = 800, H = 560;
 canvas.width = W;
 canvas.height = H;
 
@@ -253,17 +253,19 @@ function sendInput(){
   computeAutoAim();
   const switchWeapon=checkWeaponSwitch();
 
-  // WASD for ALL players + Arrow keys also work
+  // Convert joystick to directional flags (threshold 0.25 so small nudges register)
+  const jx = joystick.active ? joystick.dx : 0;
+  const jy = joystick.active ? joystick.dy : 0;
+  const JT = 0.25;
+
   socket.emit('input',{
-    up:    keys['w']||keys['arrowup']   ||keys['ArrowUp'],
-    down:  keys['s']||keys['arrowdown'] ||keys['ArrowDown'],
-    left:  keys['a']||keys['arrowleft'] ||keys['ArrowLeft'],
-    right: keys['d']||keys['arrowright']||keys['ArrowRight'],
+    up:    keys['w']||keys['arrowup']   ||keys['ArrowUp']    ||(jy < -JT),
+    down:  keys['s']||keys['arrowdown'] ||keys['ArrowDown']  ||(jy >  JT),
+    left:  keys['a']||keys['arrowleft'] ||keys['ArrowLeft']  ||(jx < -JT),
+    right: keys['d']||keys['arrowright']||keys['ArrowRight'] ||(jx >  JT),
     shoot,grenade,dash,
     aimAngle:getAimAngle(),
     switchWeapon,
-    jx:joystick.active?joystick.dx:0,
-    jy:joystick.active?joystick.dy:0,
   });
 }
 
