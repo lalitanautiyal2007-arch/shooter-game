@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2P Shooter</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+    }
+    #scoreboard {
+      display: flex;
+      gap: 60px;
+      margin-bottom: 14px;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    #p1score { color: #4fc3f7; }
+    #p2score { color: #ef9a9a; }
+    canvas {
+      border: 2px solid #333;
+      border-radius: 6px;
+      display: block;
+    }
+    #status {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #888;
+      letter-spacing: 1px;
+      min-height: 20px;
+    }
+    #controls {
+      margin-top: 18px;
+      display: flex;
+      gap: 40px;
+      font-size: 12px;
+      color: #555;
+    }
+    #controls span { color: #888; }
+    #overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #message {
+      font-size: 36px;
+      font-weight: bold;
+      letter-spacing: 4px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #message.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="scoreboard">
+    <div id="p1score">P1: 0</div>
+    <div id="p2score">P2: 0</div>
+  </div>
+  <div style="position:relative">
+    <canvas id="canvas" width="800" height="500"></canvas>
+    <div id="overlay"><div id="message"></div></div>
+  </div>
+  <div id="status">Waiting for second player...</div>
+  <div id="controls">
+    <div><span>P1:</span> WASD move &nbsp; F shoot</div>
+    <div><span>P2:</span> Arrow keys move &nbsp; L shoot</div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
